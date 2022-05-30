@@ -1,0 +1,167 @@
+\documentclass[aspectratio=169,xcolor=svgnames]{beamer} 
+\input{preambles}
+
+% DOCUMENT INFORMATION
+\title[SDMs with GPs]{Species Distribution Modeling with Gaussian Processes}
+\subtitle{ - Two Smooth Newt Subspecies - }
+\author[Erős Nándor]{
+	Erős Nándor\supersc{1}
+}
+\institute[]{%
+    \supersc{1}~Babeș-Bolyai University, Faculty of Mathematics and Computer Science, \\
+    Data analysis and modeling, erosnandi[at]gmail.com \\[5 mm]
+    
+    \textbf{Scientific coordinator:} Csató Lehel \\
+}
+\date{\today}
+\begin{document}
+
+% TITLE PAGE WITHOUT SIDEBAR
+\begingroup
+\makeatletter
+\setlength{\hoffset}{.5\beamer@sidebarwidth}
+\makeatother
+\begin{frame}[plain]
+\maketitle
+\end{frame}
+\endgroup
+
+% TABLE OF CONTENTS
+\begin{frame}
+\frametitle{Table of Contents}
+\tableofcontents
+\end{frame}
+
+\section{Introduction}
+\begin{frame}{Background and Motivation}
+   Conservation biology will become increasingly important in the future.\\
+    The various resources are limited and often do not cover the required amount.\\
+    In any decision-making involving nature or protected species, the following questions are asked:\\
+    
+    \begin{enumerate}
+        \item Where do they live?
+        \item What abundance are they present in?
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}{State of art in Species Distribution Modeling}
+    \textbf{Problem:} We know some of the places where the species lives. \textbf{Presence-only} data in most cases. \\
+    
+    Generation of \textbf{pseudo-absence points}.
+    It can be \textit{optimized} with many iterations to increase the accuracy.\\
+    
+    Commonly used (black-box) models: MaxEnt, Random Forest, Boosted Regression Trees, Generalized Linear or Additive models.\\[3 mm]
+    \textbf{Gaussian Processes are less commonly used.}
+
+\end{frame}
+
+\begin{frame}{Idea}
+    In this case we tried to use the distribution data of two subspecies which show complementary distributions. \\
+    One is labeled 1 and the other is 0. We do not use pseudo-absence points.\\[5mm]
+    
+    Validation of model results is always a difficulty...\textbf{expert opinion}.
+\end{frame}
+
+\section{Methodology}
+
+\begin{frame}{Data preparation}
+    \begin{enumerate}
+        \item Environmental data download: 19 bioclimate rasters from WorldClim platform \cite{fick2017worldclim}
+        \item Cropped the rasters to target area (Romania)
+        \item Presence-only data of two newt subspecies (Lv. amp: 411; Lv. vulg. 226)
+    \end{enumerate}
+    
+    \begin{figure}
+        \centering
+        \includegraphics[width = 80mm]{figures/Presence_data.jpg}
+        \caption{Presence-only data in target area and a background bioclimatic variable}
+        \label{fig:my_label}
+    \end{figure}
+    
+\end{frame}
+
+\begin{frame}{Feature vectors using Principal Component Analysis}
+    PCA is widely used for bioclimatic profiling \cite{YOON2021106430}.
+    We created 5 principal components, the first two components absorbed 83\% of the total variance.
+
+    \begin{figure}
+        \centering
+        \includegraphics[width = 75mm]{figures/PCA 1.png}
+        \caption{The PCA 1 axis in space (var. 52\%)}
+        \label{fig:my_label}
+    \end{figure}
+    
+\end{frame}
+
+\begin{frame}{Gaussian Process for binary classification \cite{golding2016, gptutorial}}
+
+    Presence data of one subspecies was labelled with 1 and other one with 0: \\
+    $Y \in \{0,1\}$ and \textit{Y} is Bernoulli-distributed.\\[5mm]
+    
+    GP is a stochastic process, where $\forall X \in \mathbb{R}$ is assigned a random variable $f(x)$ and where the joint distribution of a finite number of these variables $ p(f(x_1)$...$f(x_N))$ is itself Gaussian:
+
+   \begin{equation}
+        p(f|X) = \mathcal{N}(f|\mu, K)
+   \end{equation}
+   
+   where $\mu = 0$ and K $= k(x, x')$ is a parametric RBF kernel with specific length scale ($l_i$) for each environmental variables: 
+    \begin{equation}
+        k(x, x') = e^{- \frac{1}{2 l_i^2} D}
+    \end{equation}
+    \begin{equation}
+        D = x + x' - 2 x x'^{T} 
+    \end{equation}
+
+\end{frame}
+
+\section{Results}
+\begin{frame}{Distribution probabilities}
+    \begin{figure}
+        \centering
+        \includegraphics[width = 130mm]{figures/Distribution_result.jpg}
+        \caption{Distribution of smooth newt subspecies}
+        \label{fig:my_label}
+    \end{figure}
+\end{frame}
+
+\section{Conclusions and future work}
+\begin{frame}{Conclusions}
+    \begin{itemize}
+        \item GPs are very flexible to use for this type of data and occurrence patterns.
+        \item Based on expert opinion, the distribution probability maps are more reliable than other ones generated with MaxEnt or RF model. 
+        \item Importance of omitting the doubtful pseudo-absence points.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Future work}
+    \begin{itemize}
+        \item Improve the mathematical formulas. 
+        \item Update the git-repository and clear the Jupyter Notebook. 
+        \item Back-project the principal components into original variables to get the species' response to environmental variables.
+        \item Calculate and visualize the uncertainty of the model. 
+        \item Calculate model performance statistics to be comparable with other models. 
+    \end{itemize}
+\end{frame}
+
+
+\section*{} % Not belong to any section
+% REFERENCES
+\begin{frame}[allowframebreaks]\frametitle{References}
+    \bibliographystyle{ieeetr}
+    \small \bibliography{references}
+\end{frame}
+
+
+% ACKNOWLEGMENT
+\begin{frame}{Acknowledgment}
+    Thank you for your attention!\\[5mm]
+    
+    Thank you Csató Lehel for the professional guiding.\\[5mm]
+    
+    Thanks for the OpenHerpMaps maintainers giving access to their database!\\[5mm]
+    \begin{figure}
+        \centering
+        \includegraphics[width = 50mm]{figures/OHM_logo.png}
+    \end{figure}
+\end{frame}
+\end{document}
